@@ -1,0 +1,97 @@
+/* 卡片容器 */
+.vessel-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform .3s ease, box-shadow .3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* 懸停時上浮與陰影加深 */
+.vessel-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+/* 卡片標題：ANA 深藍系漸層 */
+.vessel-card-header {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, #0f297c, #5064a3);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-radius: 12px 12px 0 0;
+}
+
+.vessel-card-header .vessel-icon {
+  margin-right: .5rem;
+  font-size: 1.2rem;
+}
+
+/* 內容區 */
+.vessel-card-body {
+  padding: 1rem;
+  font-size: .95rem;
+  color: #333;
+  background-color: #ffffff;
+}
+
+.vessel-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: .75rem;
+}
+
+.vessel-info .info-icon {
+  margin-right: .5rem;
+  color: #0f297c;
+  font-size: 1rem;
+}
+
+.vessel-info a {
+  color: #0f297c;
+  text-decoration: none;
+}
+
+.vessel-info a:hover {
+  text-decoration: underline;
+}
+
+/* 卡片底部 */
+.vessel-card-footer {
+  padding: .75rem 1rem;
+  background-color: #f6f8fc;
+  text-align: right;
+  border-top: 1px solid #e1e6f0;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Badge 樣式 */
+.badge {
+  display: inline-block;
+  padding: .4em .8em;
+  font-size: .8em;
+  border-radius: .25rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* 狀態對應色一致化 */
+.badge-approved {
+  background-color: #28a745;
+}
+
+.badge-report {
+  background-color: #5064a3;
+}
+
+.badge-pending {
+  background-color: #ffc107;
+  color: #212529;
+}

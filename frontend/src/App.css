@@ -1,0 +1,466 @@
+/* ====== 1. Reset 基礎 ====== */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh; /* 背景高度至少為視窗高度 */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f9; /* 淺灰背景 */
+  color: #333;
+}
+
+.App-logo,
+.App-header,
+.App-link {
+  display: none;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ====== 2. 主容器與區塊設計 ====== */
+
+.container {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px; /* 導角 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  max-width: 100%;;
+  margin: 2rem auto;
+}
+
+/* ====== 3. 標題樣式 ====== */
+h2, h4 {
+  color: #0f297c;
+  border-left: 4px solid #5064a3;
+  padding-left: 12px;
+  margin-bottom: 1.5rem;
+}
+
+/* ====== 4. 表單欄位 ====== */
+
+.form-select,
+.form-control {
+  border-color: #dbe1f0;
+  border-radius: 8px;
+}
+
+.form-select:focus,
+.form-control:focus {
+  border-color: #0f297c;
+  box-shadow: 0 0 0 0.2rem rgba(15, 41, 124, 0.15);
+}
+
+/* ====== 5. 船舶卡片樣式 ====== */
+
+.vessel-card-wrapper {
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 1px solid #dbe1f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+
+/* 卡片內部 */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+  max-width: 100%;
+  min-width: 260px;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card .card-header {
+  background-color: #0f297c;
+  color: #fff;
+  border-radius: 10px 10px 0 0;
+}
+
+/* ====== 6. Excel 上傳結果區塊 ====== */
+
+.result-pre {
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  margin-top: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+/* ====== 7. 表格樣式 ====== */
+
+.table-responsive {
+  margin-top: 1rem;
+}
+
+table.table-bordered th,
+table.table-bordered td {
+  vertical-align: middle;
+  text-align: center;
+  padding: 0.6rem;
+  border: 1px solid #ccd6ea;
+}
+
+.table thead {
+  background-color: #e7ecf7;
+}
+
+tr.table-danger {
+  background-color: #f8d7da !important;
+}
+
+tr.table-warning {
+  background-color: #fff3cd !important;
+}
+
+tr.table-info {
+  background-color: #cff4fc !important;
+}
+
+tr.table-success {
+  background-color: #d1e7dd !important;
+}
+
+/* ====== 8. 狀態 Badge ====== */
+
+.badge-approved {
+  background: #28a745;
+}
+
+.badge-report {
+  background: #17a2b8;
+}
+
+.badge-pending {
+  background: #ffc107;
+  color: #212529;
+}
+
+/* 抖動 */
+.file-list-ship.shake {
+  animation: shake 0.6s ease-in-out infinite;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-1px); }
+  80% { transform: translateX(1px); }
+}
+
+/* ====== 9. 上傳/清除按鈕區 ====== */
+
+button.btn {
+  border-radius: 8px;
+}
+
+button.btn-primary {
+  background-color: #0f297c;
+  border-color: #0f297c;
+}
+
+button.btn-secondary {
+  background-color: #5064a3;
+  border-color: #5064a3;
+}
+
+button.btn-primary:hover,
+button.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+/* ====== 10. 其他細節 ====== */
+
+/* 移除多餘 padding 以達到左靠的風格 */
+.vessel-card-wrapper {
+  margin: 0;
+}
+
+.nav-portal-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent; /* 導覽列背景色設為透明 */
+  padding: 8px; /* 減少內邊距，讓導航列更緊湊 */
+  border-radius: 30px; /* 控制導航列的圓角 */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.08); /* 減少內外陰影 */
+  max-width: 1080px; /* 減少導航列的最大寬度 */
+  margin: 10px auto; /* 縮小上下間距 */
+}
+
+.nav-portal-link {
+  display: inline-block; /* 讓按鈕更像標籤 */
+  padding: 0.5em 1em; /* 減少內邊距，讓按鈕更緊湊 */
+  font-weight: bold;
+  text-decoration: none;
+  color: #555; /* 使用較柔和的字體顏色 */
+  background-color: #f0f0f0; /* 使用淺灰色背景 */
+  border-radius: 20px; /* 控制按鈕的圓角，讓它像標籤 */
+  transition: all 0.3s ease;
+  text-align: center;
+  white-space: nowrap; /* 禁止文字換行 */
+  min-width: 200px; /* 設定按鈕的最小寬度 */
+  margin: 0 5px; /* 增加按鈕之間的間距 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* 減少按鈕的陰影 */
+}
+
+.nav-portal-link:hover {
+  background-color: #e0e0e0; /* 滑鼠懸停時的背景顏色 */
+  color: #000; /* 滑鼠懸停時的字體顏色 */
+}
+
+.nav-portal-link.active {
+  background-color: #000000; /* 當前頁面的背景顏色 */
+  color: #fff; /* 當前頁面的字體顏色 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* 減少當前頁面按鈕的陰影 */
+}
+
+
+.table-container {
+  max-height: 600px; /* 設置表格容器的最大高度 */
+  overflow-y: auto; /* 垂直滾動條 */
+  overflow-x: hidden; /* 隱藏水平滾動條 */
+  width: 100%; /* 表格容器寬度自適應 */
+  background-color: #ffffff; /* 不透明白色背景 */
+  border: 1px solid #ddd; /* 邊框 */
+  border-radius: 8px; /* 圓角 */
+  padding: 15px; /* 增加內距 */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* 添加陰影效果 */
+}
+
+.table {
+  width: 100%; /* 表格寬度自適應 */
+  table-layout: fixed; /* 固定表格佈局，讓列寬均分 */
+}
+
+.table th, .table td {
+  text-align: center; /* 文字置中 */
+  vertical-align: middle; /* 垂直置中 */
+  word-wrap: break-word; /* 單詞換行 */
+}
+
+
+/* ====== 11. 清單導線 ====== */
+/* 清單的基本樣式 */
+.list-group {
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+  list-style: none; /* 移除預設的項目符號 */
+  position: relative;
+}
+
+/* 清單項目樣式 */
+.list-group-item {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+  border: 1px solid #ccc; /* 外框線 */
+  display: inline-block; /* 讓外框寬度自適應內容 */
+  width: fit-content; /* 自適應內容寬度 */
+  margin-bottom: 5px; /* 增加項目間距 */
+  border: none; /* 移除邊框 */
+  padding: 0; /* 移除內距 */
+  margin: 0; /* 移除外距 */
+}
+
+/* 子清單樣式 */
+.list-group .list-group {
+  background-color: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+  margin: 3px 0; /* 增加上下間距 */
+  border-radius: 5px; /* 圓角效果 */
+  padding-left: 10px; /* 縮排 */
+  font-size: 0.875rem; /* 設定字體大小為 14px (0.875rem) */
+  font-weight: normal; /* 取消粗體 */
+  color: #a09c9c; /* 設定字體顏色為深灰色 */
+}
+
+
+/* 添加垂直導線 */
+.list-group-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -10px;
+  bottom: 0;
+  width: 1px;
+  background-color: #ccc; /* 導線顏色 */
+  z-index: 1; /* 確保導引線在其他元素之上 */
+}
+
+/* 添加水平導線 */
+.list-group-item::after {
+  content: '';
+  position: absolute;
+  display: none;
+  top: 10px;
+  left: -10px;
+  width: 10px;
+  height: 1px;
+  background-color: #ccc; /* 導線顏色 */
+}
+
+
+/* 第一層（船名）的預設樣式 */
+.file-list-ship {
+  margin: 1px; /* 移除外距 */
+  padding: 1px; /* 增加內距，讓框框更大 */
+  text-decoration: none; /* 確保文字沒有底線 */
+  position: relative; /* 為偽元素定位做準備 */
+  border: none; /* 確保沒有邊框 */
+  list-style: none; /* 移除清單符號 */
+}
+
+/* 滑鼠懸停時的效果 */
+.file-list-ship:hover {
+  color: #0056b3; /* 懸停時的文字顏色 */
+}
+
+/* 滑鼠懸停時顯示底線 */
+.file-list-ship:hover::after {
+  opacity: 1; /* 顯示底線 */
+  transform: scaleX(1); /* 展開底線 */
+}
+
+.file-list-ship::after {
+  content: ''; /* 偽元素內容 */
+  position: absolute;
+  left: 0;
+  right: 0; /* 確保底線寬度覆蓋整個框框 */
+  bottom: 0; /* 將底線放在框框的最下沿 */
+  height: 5px; /* 底線的粗細 */
+  background-color: #0056b3; /* 底線顏色 */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 添加陰影效果 */
+  opacity: 0; /* 初始隱藏 */
+  transform: scaleX(0); /* 初始縮放為 0 */
+  transform-origin: left; /* 從左側開始展開 */
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out; /* 過渡效果 */
+}
+
+
+/* ====== 12. 垃圾桶 ====== */
+/* 隱藏垃圾桶圖示 */
+.file-list-item .btn {
+  visibility: hidden; /* 平時隱藏 */
+  opacity: 0; /* 透明 */
+  transition: visibility 0s, opacity 0.2s ease-in-out; /* 添加過渡效果 */
+}
+
+/* 滑鼠懸停時顯示垃圾桶圖示 */
+.file-list-item:hover .btn {
+  visibility: visible; /* 顯示 */
+  opacity: 1; /* 不透明 */
+}
+
+/* 自定義按鈕樣式 */
+.btn-transparent {
+  background-color: transparent; /* 背景透明 */
+  border: none; /* 移除邊框 */
+  color: #ccc; /* 灰白色文字 */
+  opacity: 0.7; /* 半透明效果 */
+  transition: opacity 0.2s ease-in-out; /* 添加過渡效果 */
+}
+
+/* 滑鼠懸停時的效果 */
+.btn-transparent:hover {
+  opacity: 1; /* 滑鼠懸停時完全不透明 */
+  color: #000; /* 文字變為黑色 */
+  cursor: pointer; /* 滑鼠變為指針 */
+}
+
+/* ====== 13. logs ====== */
+
+.table td, .table th {
+  word-wrap: break-word; /* 允許單詞換行 */
+  word-break: break-word; /* 強制長字串換行 */
+  white-space: normal; /* 允許文字換行 */
+}
+
+.table-auto-wrap td, .table-auto-wrap th {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.log-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background-color: #ebebeb; /* 主色調 */
+  border-radius: 0 8px 8px 8px; /* 只保留下方兩個倒角 */
+  max-height: 150px;
+  overflow-y: auto;
+  box-shadow: none;
+  width: 100%;
+  min-width: 300px;
+  max-width: 800px;
+  font-size: 12px;
+}
+
+.log-tabs-bookmark {
+  display: flex;
+  gap: 0; /* 取消間距 */
+  margin-bottom: 5px;
+}
+
+.bookmark-tab {
+  border: none;
+  background: rgba(240,240,240,0.7); /* 淡灰+透明 */
+  color: #888;
+  padding: 10px 32px 10px 32px;
+  font-weight: bold;
+  border-radius: 18px 18px 0 0;
+  box-shadow: none;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  position: relative;
+  top: 2px;
+  margin-right: -2px;
+  z-index: 1;
+}
+
+.bookmark-tab.active {
+  background: #ebebeb; /* 主色調：不透明較深 */
+  color: #333;
+  box-shadow: none;
+  z-index: 2;
+}
+
+.log-item {
+  padding: 6px 10px;
+  border-radius: 5px;
+  margin-bottom: 2px;
+  font-size: 12px; /* 控制每一筆 log 的字體大小 */
+}
+.neon-1 {
+  background: linear-gradient(90deg, #ffe066 0%, #ffe066 70%, #fffbe6 100%);
+  box-shadow: 0 0 8px #ffe066;
+  font-weight: bold;
+}
+.neon-2 {
+  background: linear-gradient(90deg, #fff176 0%, #fff176 70%, #fffbe6 100%);
+  box-shadow: 0 0 4px #fff176;
+}
+.neon-3 {
+  background: linear-gradient(90deg, #fff9c4 0%, #fff9c4 70%, #fffbe6 100%);
+  box-shadow: 0 0 2px #fff9c4;
+}
+.bounce {
+  animation: bounce 1s;
+}
+@keyframes bounce {
+  0%   { transform: translateY(0); }
+  20%  { transform: translateY(-10px); }
+  40%  { transform: translateY(0); }
+  60%  { transform: translateY(-5px); }
+  80%  { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}

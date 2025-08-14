@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+
+# Archives / 大檔暫存
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# Env/Secrets
+.env
+.env.*
+*.local
+
+# Node
+**/node_modules/
+**/build/
+**/dist/
+**/.cache/
+npm-debug.log*
+yarn-*.log*
+pnpm-debug.log*
+
+# Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Project specific (可按需保留或忽略)
+backend/logs/
+backend/results/
