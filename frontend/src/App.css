@@ -464,3 +464,23 @@ button.btn-secondary:hover {
   80%  { transform: translateY(0); }
   100% { transform: translateY(0); }
 }
+
+/* CSS Transitions for log fade animations */
+.log-fade-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.log-fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 400ms ease-in-out, transform 400ms ease-in-out;
+}
+.log-fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+.log-fade-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 400ms ease-in-out, transform 400ms ease-in-out;
+}
