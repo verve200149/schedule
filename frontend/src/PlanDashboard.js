@@ -6,6 +6,22 @@ import { FaSave } from 'react-icons/fa'; // 引用icon
 
 const API_BASE = 'http://localhost:3001';
 
+// 新增抖動效果的 CSS
+const shakeStyle = `
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+.shake {
+  animation: shake 0.5s;
+  animation-iteration-count: infinite;
+}
+`;
+
 function PlanDashboard() {
   // 狀態管理
   const [files, setFiles] = useState([]); // 檔案列表
@@ -25,6 +41,7 @@ function PlanDashboard() {
   const [justUpdatedFiles, setJustUpdatedFiles] = useState([]); // 本次 session 剛修改檔案
   const [showToolbar, setShowToolbar] = useState(false);// 在 PlanDashboard.js 的 return 表格區塊外加：
   const [isToolbarBounce, setIsToolbarBounce] = useState(false);
+  const [readFiles, setReadFiles] = useState([]); // 已讀取檔案列表
   
   
   useEffect(() => {
@@ -88,6 +105,16 @@ function PlanDashboard() {
     acc[shipName][date].push(code);
     return acc;
   }, {});
+
+  // 判斷船名是否有 "新" 標籤
+  const hasNewBadge = (shipName) => {
+    return Object.keys(groupedFiles[shipName] || {}).some(date =>
+      groupedFiles[shipName][date].some(code => {
+        const fileName = `${date}_${code}_${shipName}.json`;
+        return logs.length > 0 && logs[0].file === fileName && !readFiles.includes(fileName);
+      })
+    );
+  };
 
   // 取得表格欄位
   const columns = fileContent && fileContent.data && fileContent.data.length > 0
@@ -215,7 +242,12 @@ function PlanDashboard() {
       .then(res => {
         setSelectedFile(fileName);
         setFileContent(res.data);
- 
+        
+        // 標記為已讀取
+        if (!readFiles.includes(fileName)) {
+          setReadFiles(prev => [...prev, fileName]);
+        }
+        
         fetchLogs();
       })
       .catch(err => {
@@ -269,6 +301,7 @@ const latestByFile = logs
   // --- UI ---
   return (
     <div className="container py-4">
+      <style>{shakeStyle}</style>
       <h2 className="mb-4">船舶加油計劃管制後台</h2>
       {/* log container 分頁按鈕 */}
       <div className="log-tabs-bookmark mb-0">
@@ -360,82 +393,69 @@ const latestByFile = logs
 
       {/* 第二排：檔案列表 + 檔案內容 */}
       <div className="row">
-        <div className="col-md-1">
+        <div className="col-md-2">
           <ul className="list-group">
-            {Object.keys(groupedFiles).map((shipName) => {
-              const shipHasNew = Object.keys(groupedFiles[shipName]).some((date) =>
-                groupedFiles[shipName][date].some((code) =>
-                  (latestByFile[`${date}_${code}_${shipName}.json`]?.type === 'addition')
-                )
-              );
-
-              return (
-                <li key={shipName} className="list-group-item file-list-ship">
-                  <div
-                    className={`file-list-ship${shipHasNew ? ' shake' : ''}`}
-                    onClick={() => handleExpandShip(shipName)}
-                    style={{ cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
-                  >
-                    {shipName}
-                  </div>
-
-                  {expandedShip === shipName && (
-                    <ul className="list-group">
-                      {Object.keys(groupedFiles[shipName]).map((date) => (
-                        <li key={date} className="list-group-item">
-                          <div
-                            className="file-list-date"
-                            onClick={() => setExpandedDate(expandedDate === date ? null : date)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            {date}
-                          </div>
-
-                          {expandedDate === date && (
-                            <ul className="list-group">
-                              {groupedFiles[shipName][date].map((code) => {
-                                const fileName = `${date}_${code}_${shipName}.json`;
-                                const latest = latestByFile[fileName];
-                                const isDeleted = latest?.type === 'delete';
-                                if (isDeleted) return null;
-
-                                const isNew = latest?.type === 'addition'; 
-                                const isUpdated = latest?.type === 'update' && justUpdatedFiles.includes(fileName);
-
-                                return (
-                                  <li
-                                    key={code}
-                                    className={`list-group-item file-list-item ${selectedFile === fileName ? 'active' : ''}`}
-                                    onClick={() => handleSelectFile(fileName)}
-                                    style={{ display: 'inline-flex', alignItems: 'center' }}
-                                  >
-                                    <span>{code}</span>
-                                    {isNew && <span className="badge bg-warning text-dark ms-1 shake">新</span>}
-                                    {isUpdated && <span className="badge bg-success text-white ms-1">已修改</span>}
-                                    <button
-                                      className="btn btn-transparent btn-sm"
-                                      style={{ marginLeft: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteFile(fileName);
-                                      }}
-                                      disabled={isDeleting}
-                                      title="刪除檔案"
-                                    >
-                                      <FaTrash />
-                                    </button>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+            {Object.keys(groupedFiles).map(shipName => (
+              <li key={shipName} className="list-group-item file-list-ship">
+                <div
+                  className="file-list-ship"
+                  onClick={() => setExpandedShip(expandedShip === shipName ? null : shipName)}
+                  style={{ cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
+                >
+                  {shipName}
+                  {hasNewBadge(shipName) && (
+                    <span className="badge bg-warning text-dark ms-2 shake">新</span>
                   )}
-                </li>
-              );
-            })}
+                </div>
+                {expandedShip === shipName && (
+                  <ul className="list-group">
+                    {Object.keys(groupedFiles[shipName]).map(date => (
+                      <li key={date} className="list-group-item">
+                        <div
+                          className="file-list-date"
+                          onClick={() => setExpandedDate(expandedDate === date ? null : date)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {date}
+                        </div>
+                        {expandedDate === date && (
+                          <ul className="list-group">
+                            {groupedFiles[shipName][date].map(code => {
+                              const fileName = `${date}_${code}_${shipName}.json`;
+                              const isNew = logs.length > 0 && logs[0].file === fileName && !readFiles.includes(fileName);
+                              return (
+                                <li
+                                  key={code}
+                                  className={`list-group-item file-list-item ${selectedFile === fileName ? 'active' : ''}`}
+                                  onClick={() => handleSelectFile(fileName)}
+                                  style={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <span>{code}</span>
+                                  {isNew && (
+                                    <span className="badge bg-warning text-dark ms-1 shake">新</span>
+                                  )}
+                                  <button
+                                    className="btn btn-transparent btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteFile(fileName);
+                                    }}
+                                    disabled={isDeleting}
+                                    title="刪除檔案"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
 
