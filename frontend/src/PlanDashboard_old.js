@@ -6,6 +6,22 @@ import { FaSave } from 'react-icons/fa'; // 引用icon
 import { CSSTransition, TransitionGroup } from 'react-transition-group';
 const API_BASE = `http://${window.location.hostname}:3001`;
 
+// 新增抖動效果的 CSS
+const shakeStyle = `
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-2px); }
+  40% { transform: translateX(2px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  100% { transform: translateX(0); }
+}
+.shake {
+  animation: shake 0.5s;
+  animation-iteration-count: infinite;
+}
+`;
+
 function PlanDashboard() {
   // 狀態管理
   const [files, setFiles] = useState([]); // 檔案列表
@@ -93,6 +109,16 @@ function PlanDashboard() {
     acc[shipName][date].push(code);
     return acc;
   }, {});
+
+  // 判斷船名是否有 "新" 標籤
+  const hasNewBadge = (shipName) => {
+    return Object.keys(groupedFiles[shipName] || {}).some(date =>
+      groupedFiles[shipName][date].some(code => {
+        const fileName = `${date}_${code}_${shipName}.json`;
+        return logs.length > 0 && logs[0].file === fileName && !readFiles.includes(fileName);
+      })
+    );
+  };
 
   // 取得表格欄位
   const columns = fileContent && fileContent.data && fileContent.data.length > 0
@@ -220,7 +246,12 @@ function PlanDashboard() {
       .then(res => {
         setSelectedFile(fileName);
         setFileContent(res.data);
- 
+        
+        // 標記為已讀取
+        if (!readFiles.includes(fileName)) {
+          setReadFiles(prev => [...prev, fileName]);
+        }
+        
         fetchLogs();
       })
       .catch(err => {
@@ -271,11 +302,10 @@ const latestByFile = logs
   .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
   .reduce((acc, log) => (acc[log.file] ? acc : { ...acc, [log.file]: log }), {});
 
-  const logRefs = useRef({});
-
   // --- UI ---
   return (
     <div className="container py-4">
+      <style>{shakeStyle}</style>
       <h2 className="mb-4">船舶加油計劃管制後台</h2>
       {/* log container 分頁按鈕 */}
       <div className="log-tabs-bookmark mb-0">
@@ -291,90 +321,56 @@ const latestByFile = logs
 
       {/* 第一排：log container + 新增檔案 */}
       <div className="row mb-3">
-      <div className="col-md-7">
-     <div className="log-container">
-      <div className="log-list">
-      <TransitionGroup>
-     {Object.values(latestLogs)
-    .filter(log =>
-      (activeTab === 'adddel' && (log.type === 'addition' || log.type === 'delete')) ||
-      (activeTab === 'readupd' && (log.type === 'read' || log.type === 'update'))
-    )
-    .map((log, index) => {
-      const refKey = log.file + log.timestamp;
-      if (!logRefs.current[refKey]) {
-        logRefs.current[refKey] = React.createRef();
-      }
-      const nodeRef = logRefs.current[refKey];
-      return (
-        <CSSTransition
-          key={refKey}
-          timeout={400}
-          classNames="log-fade"
-          nodeRef={nodeRef}
-        >
-         <div ref={nodeRef} className="log-item">
-  <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
-    {new Date(log.timestamp).toLocaleString()} ｜   
-    {log.type === 'delete' ? (
-      <span style={{ color: 'brown', cursor: 'not-allowed' }}>
-        {log.file}
-      </span>
-    ) : (
-      <span
-        style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
-        onClick={() => handleSelectFile(log.file)}
-        title="點擊展開檔案"
-      >
-        {log.file}
-      </span>
-    )}
-    ｜ <span style={{ color: (log.type === 'delete' || log.type === 'update') ? 'brown' : 'green' }}>
-      {log.type === 'addition' ? '新' :
-        log.type === 'delete' ? '關閉' :
-        log.type === 'read' ? '讀取' :
-        log.type === 'update' ? '修改' :
-        log.type}
-    </span>
-    {log.details}
-    {/* 固定位於右端的垃圾桶或佔位 */}
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      width: '10px',
-      height: '10px',
-      verticalAlign: 'middle'
-    }}>
-      {activeTab === 'readupd' ? (
-        <button
-          className="btn btn-transparent btn-sm"
-          style={{ 
-  cursor: 'pointer', 
-  display: 'inline-flex', 
-  alignItems: 'center', 
-  width: '30px', 
-  height: '30px',
-  marginLeft: '8px'   // 這行就是 left margin
-}}
-          onClick={() => handleDeleteFile(log.file)}
-          title="刪除檔案"
-        >
-          <FaTrash />
-        </button>
-      ) : (
-        // 佔位元素，確保所有 log 行高度一致
-        <span style={{ width: '24px', height: '24px', display: 'inline-block' }}></span>
-      )}
-    </span>
-  </span>
-</div>
-        </CSSTransition>
-      );
-    })}
-</TransitionGroup>
-    </div>
-  </div>
-</div>
+        <div className="col-md-7">
+          <div className="log-container">
+            <div className="log-list">
+        {/* 根據分頁篩選 log 類型：adddel 顯示新增/刪除，readupd 顯示讀取/修改 */}
+              {Object.values(latestLogs)
+                .filter(log =>
+                  (activeTab === 'adddel' && (log.type === 'addition' || log.type === 'delete')) ||
+                  (activeTab === 'readupd' && (log.type === 'read' || log.type === 'update'))
+                )
+                .map((log, index) => (  // 每筆 log 顯示一行，左右排列
+                  <div key={index} className="log-item">
+                  <span style={{ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    {new Date(log.timestamp).toLocaleString()} ｜   
+                    {log.type === 'delete' ? (
+                      <span style={{ color: 'brown', cursor: 'not-allowed' }}>
+                        {log.file}
+                      </span>
+                    ) : (
+                      <span
+                        style={{ color: '#007bff', cursor: 'pointer', textDecoration: 'underline' }}
+                        onClick={() => handleSelectFile(log.file)}
+                        title="點擊展開檔案"
+                      >
+                        {log.file}
+                      </span>
+                    )}
+                    ｜ <span style={{ color: (log.type === 'delete' || log.type === 'update') ? 'brown' : 'green' }}>
+                      {log.type === 'addition' ? '新' :
+                        log.type === 'delete' ? '關閉' :
+                        log.type === 'read' ? '讀取' :
+                        log.type === 'update' ? '修改' :
+                        log.type}
+                    </span>
+                    {log.details}
+                    {activeTab === 'readupd' && (
+                      <button
+                        className="btn btn-transparent btn-sm"
+                        style={{ marginLeft: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
+                        onClick={() => handleDeleteFile(log.file)}
+                        title="刪除檔案"
+                      >
+                        <FaTrash />
+                      </button>
+                    )}
+                  </span>
+                </div>
+                ))}
+            </div>
+          </div>
+        </div>
         {/* 新增檔案區塊 */}
         <div className="col-md-5">
           <div className="mb-3">
@@ -401,82 +397,69 @@ const latestByFile = logs
 
       {/* 第二排：檔案列表 + 檔案內容 */}
       <div className="row">
-        <div className="col-md-1">
+        <div className="col-md-2">
           <ul className="list-group">
-            {Object.keys(groupedFiles).map((shipName) => {
-              const shipHasNew = Object.keys(groupedFiles[shipName]).some((date) =>
-                groupedFiles[shipName][date].some((code) =>
-                  (latestByFile[`${date}_${code}_${shipName}.json`]?.type === 'addition')
-                )
-              );
-
-              return (
-                <li key={shipName} className="list-group-item file-list-ship">
-                  <div
-                    className={`file-list-ship${shipHasNew ? ' shake' : ''}`}
-                    onClick={() => handleExpandShip(shipName)}
-                    style={{ cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
-                  >
-                    {shipName}
-                  </div>
-
-                  {expandedShip === shipName && (
-                    <ul className="list-group">
-                      {Object.keys(groupedFiles[shipName]).map((date) => (
-                        <li key={date} className="list-group-item">
-                          <div
-                            className="file-list-date"
-                            onClick={() => setExpandedDate(expandedDate === date ? null : date)}
-                            style={{ cursor: 'pointer' }}
-                          >
-                            {date}
-                          </div>
-
-                          {expandedDate === date && (
-                            <ul className="list-group">
-                              {groupedFiles[shipName][date].map((code) => {
-                                const fileName = `${date}_${code}_${shipName}.json`;
-                                const latest = latestByFile[fileName];
-                                const isDeleted = latest?.type === 'delete';
-                                if (isDeleted) return null;
-
-                                const isNew = latest?.type === 'addition'; 
-                                const isUpdated = latest?.type === 'update' && justUpdatedFiles.includes(fileName);
-
-                                return (
-                                  <li
-                                    key={code}
-                                    className={`list-group-item file-list-item ${selectedFile === fileName ? 'active' : ''}`}
-                                    onClick={() => handleSelectFile(fileName)}
-                                    style={{ display: 'inline-flex', alignItems: 'center' }}
-                                  >
-                                    <span>{code}</span>
-                                    {isNew && <span className="badge bg-warning text-dark ms-1 shake">新</span>}
-                                    {isUpdated && <span className="badge bg-success text-white ms-1">已修改</span>}
-                                    <button
-                                      className="btn btn-transparent btn-sm"
-                                      style={{ marginLeft: '8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDeleteFile(fileName);
-                                      }}
-                                      disabled={isDeleting}
-                                      title="刪除檔案"
-                                    >
-                                      <FaTrash />
-                                    </button>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+            {Object.keys(groupedFiles).map(shipName => (
+              <li key={shipName} className="list-group-item file-list-ship">
+                <div
+                  className="file-list-ship"
+                  onClick={() => setExpandedShip(expandedShip === shipName ? null : shipName)}
+                  style={{ cursor: 'pointer', fontWeight: 'bold', display: 'flex', alignItems: 'center' }}
+                >
+                  {shipName}
+                  {hasNewBadge(shipName) && (
+                    <span className="badge bg-warning text-dark ms-2 shake">新</span>
                   )}
-                </li>
-              );
-            })}
+                </div>
+                {expandedShip === shipName && (
+                  <ul className="list-group">
+                    {Object.keys(groupedFiles[shipName]).map(date => (
+                      <li key={date} className="list-group-item">
+                        <div
+                          className="file-list-date"
+                          onClick={() => setExpandedDate(expandedDate === date ? null : date)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          {date}
+                        </div>
+                        {expandedDate === date && (
+                          <ul className="list-group">
+                            {groupedFiles[shipName][date].map(code => {
+                              const fileName = `${date}_${code}_${shipName}.json`;
+                              const isNew = logs.length > 0 && logs[0].file === fileName && !readFiles.includes(fileName);
+                              return (
+                                <li
+                                  key={code}
+                                  className={`list-group-item file-list-item ${selectedFile === fileName ? 'active' : ''}`}
+                                  onClick={() => handleSelectFile(fileName)}
+                                  style={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  <span>{code}</span>
+                                  {isNew && (
+                                    <span className="badge bg-warning text-dark ms-1 shake">新</span>
+                                  )}
+                                  <button
+                                    className="btn btn-transparent btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteFile(fileName);
+                                    }}
+                                    disabled={isDeleting}
+                                    title="刪除檔案"
+                                  >
+                                    <FaTrash />
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -484,43 +467,40 @@ const latestByFile = logs
         <div className="col-md-10">
           {fileContent && fileContent.data && fileContent.data.length > 0 ? (
             <div className="table-container">
-
               <div
- style={{
-  position: 'fixed',
-  top: '56%',
-  right: showToolbar ? '5px' : '-95px',
-  transform: 'translateY(-50%)',
-  zIndex: 2000,
-  background: showToolbar ? '#fff' : 'rgba(255,255,255,0.3)',
-  border: '1px solid #ccc',
-  borderRadius: '8px',
-  padding: '8px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'stretch',
-  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-  transition: 'right 0.3s, background 0.3s'
-}}
+                style={{
+                  position: 'fixed',
+                  top: '50%',
+                  right: showToolbar ? '18px' : '-40px',
+                  transition: 'right 0.3s, background 0.3s',
+                  zIndex: 1000,
+                  background: showToolbar ? '#fff' : 'rgba(255,255,255,0.3)',
+                  border: '1px solid #ccc',
+                  borderRadius: '8px',
+                  padding: '8px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                }}
                 onMouseEnter={() => setShowToolbar(true)}
                 onMouseLeave={() => setShowToolbar(false)}
               >
-                 <button
-    className={`btn btn-primary mb-2${isToolbarBounce ? ' bounce' : ''}`}
-    onClick={handleSaveFile}
-    style={{ opacity: showToolbar ? 1 : 0.3, transition: 'opacity 0.3s' }}
-  >
-    儲存檔案
-  </button>
-  <button
-    className={`btn btn-success${isToolbarBounce ? ' bounce' : ''}`}
-    onClick={handleExportToExcel}
-    style={{ opacity: showToolbar ? 1 : 0.3, transition: 'opacity 0.3s' }}
-  >
-    導出 Excel
-  </button>
-  </div>
-  
+                <button
+                  className={`btn btn-primary mb-2${isToolbarBounce ? ' bounce' : ''}`}
+                  onClick={handleSaveFile}
+                  style={{ opacity: showToolbar ? 1 : 0.3, transition: 'opacity 0.3s' }}
+                >
+                  儲存檔案
+                </button>
+                <button
+                  className={`btn btn-success${isToolbarBounce ? ' bounce' : ''}`}
+                  onClick={handleExportToExcel}
+                  style={{ opacity: showToolbar ? 1 : 0.3, transition: 'opacity 0.3s' }}
+                >
+                  導出 Excel
+                </button>
+              </div>
+
               <table className="table table-bordered table-sm table-auto-wrap">
                 <thead>
                   <tr>
